@@ -1,0 +1,3440 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Personal Knowledge Graph API",
+    "description": "Deterministic, rule-based Personal Knowledge Graph backend with SQLite FTS5, graph traversal, data safety, and persistent topic groups.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/notes/": {
+      "post": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Create a new note",
+        "description": "Create a new note with title, markdown content, and optional tags.",
+        "operationId": "create_note",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "List notes",
+        "description": "List notes with filtering by tag, query, sorting, and pagination.",
+        "operationId": "list_notes",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by tag name",
+              "title": "Tag"
+            },
+            "description": "Filter by tag name"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search query string in title or content",
+              "title": "Q"
+            },
+            "description": "Search query string in title or content"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Max items to return (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Max items to return (1-200)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(updated|created|title|links)$",
+              "description": "Sort order",
+              "default": "updated",
+              "title": "Sort"
+            },
+            "description": "Sort order"
+          },
+          {
+            "name": "pinned",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by pinned status",
+              "title": "Pinned"
+            },
+            "description": "Filter by pinned status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NoteListItem"
+                  },
+                  "title": "Response List Notes"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notes/{note_id}": {
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Get note details",
+        "description": "Get full details of a note including outgoing links, backlinks, unresolved links, and related notes.",
+        "operationId": "get_note",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Update a note",
+        "description": "Full update of note title, content, and tags.",
+        "operationId": "update_note",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Partial update a note",
+        "description": "Partial update of note fields such as title, content, tags, or pinned state.",
+        "operationId": "patch_note",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Delete a note",
+        "description": "Delete a note and cascade its links and tags.",
+        "operationId": "delete_note",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteDeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notes/{note_id}/link": {
+      "patch": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Create manual link",
+        "description": "Create a manual directed link from source note to target note.",
+        "operationId": "link_notes",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer source note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer source note ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notes/{note_id}/link/{target_id}": {
+      "delete": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Remove a link",
+        "description": "Remove a link between source note and target note.",
+        "operationId": "unlink_notes",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer source note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer source note ID"
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer target note ID",
+              "title": "Target Id"
+            },
+            "description": "Positive integer target note ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkDeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notes/{note_id}/backlinks": {
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Get backlinks for note",
+        "description": "Get all incoming backlinks pointing to this note.",
+        "operationId": "get_note_backlinks",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NoteBacklinkItem"
+                  },
+                  "title": "Response Get Note Backlinks"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notes/{note_id}/related": {
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Get related notes",
+        "description": "Get TF-IDF and tag-similarity related notes.",
+        "operationId": "get_note_related",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "description": "Max items to return",
+              "default": 5,
+              "title": "Limit"
+            },
+            "description": "Max items to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RelatedNoteItem"
+                  },
+                  "title": "Response Get Note Related"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notes/{note_id}/mentions": {
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "Get unlinked mentions",
+        "description": "Get unlinked mentions of this note title in other notes.",
+        "operationId": "get_note_mentions",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Positive integer note ID",
+              "title": "Note Id"
+            },
+            "description": "Positive integer note ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UnlinkedMentionItem"
+                  },
+                  "title": "Response Get Note Mentions"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graph/": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Get full graph",
+        "description": "Retrieve graph nodes, directed edges, and adjacency list for visualization.",
+        "operationId": "get_graph",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional tag filter for graph nodes",
+              "title": "Tag"
+            },
+            "description": "Optional tag filter for graph nodes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graph/neighbors/{note_id}": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Get BFS neighborhood of a note",
+        "description": "Retrieve neighborhood subgraph around a note using BFS up to depth.",
+        "operationId": "get_graph_neighbors",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Center note ID",
+              "title": "Note Id"
+            },
+            "description": "Center note ID"
+          },
+          {
+            "name": "depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 4,
+              "minimum": 1,
+              "description": "BFS exploration depth (1-4)",
+              "default": 1,
+              "title": "Depth"
+            },
+            "description": "BFS exploration depth (1-4)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graph/path": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Find shortest path between two notes",
+        "description": "Find the shortest directed path between two notes using BFS.",
+        "operationId": "get_shortest_path",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Source note ID",
+              "title": "Source"
+            },
+            "description": "Source note ID"
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Target note ID",
+              "title": "Target"
+            },
+            "description": "Target note ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortestPathResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graph/stats": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Get knowledge graph statistics",
+        "description": "Get network statistics: total notes, links, tags, orphans, hub nodes, tag distribution.",
+        "operationId": "get_graph_stats",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tags/": {
+      "get": {
+        "tags": [
+          "tags"
+        ],
+        "summary": "List all tags",
+        "description": "List all tags in the system ordered by usage count.",
+        "operationId": "list_tags",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagUsage"
+                  },
+                  "type": "array",
+                  "title": "Response List Tags"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tags/suggest": {
+      "get": {
+        "tags": [
+          "tags"
+        ],
+        "summary": "Suggest tags",
+        "description": "Suggest tags based on query prefix, fuzzy match, popularity, co-occurrence, and note content.",
+        "operationId": "suggest_tags",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Tag prefix or search term",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "Tag prefix or search term"
+          },
+          {
+            "name": "selected",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Currently selected tags for co-occurrence boost",
+              "title": "Selected"
+            },
+            "description": "Currently selected tags for co-occurrence boost"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional note text for keyword matching",
+              "title": "Content"
+            },
+            "description": "Optional note text for keyword matching"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Max suggestions",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "Max suggestions"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagSuggestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Search notes full-text",
+        "description": "Ranked full-text search using SQLite FTS5 BM25 ranking and fuzzy fallback.",
+        "operationId": "search_notes",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Full text search query with support for #tag",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "Full text search query with support for #tag"
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tag filter",
+              "title": "Tag"
+            },
+            "description": "Tag filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Max search results",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Max search results"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/suggest": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Autocomplete suggestions",
+        "description": "Fast autocomplete ranking title prefix > tag prefix > title substring > fuzzy.",
+        "operationId": "autocomplete",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Autocomplete prefix query",
+              "title": "Q"
+            },
+            "description": "Autocomplete prefix query"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Max items to return",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "Max items to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/titles/suggest": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Suggest titles for wikilink editor popup",
+        "description": "Suggest existing note titles for [[ popup autocomplete during editing.",
+        "operationId": "suggest_titles",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Title query prefix",
+              "default": "",
+              "title": "Q"
+            },
+            "description": "Title query prefix"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Max suggestions",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "Max suggestions"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TitleSuggestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/suggest/links": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Suggest potential links for note",
+        "description": "Suggest links based on TF-IDF similarity and shared tags, excluding existing links.",
+        "operationId": "suggest_links",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Note ID to find suggestions for",
+              "title": "Note Id"
+            },
+            "description": "Note ID to find suggestions for"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "description": "Max suggestions",
+              "default": 5,
+              "title": "Limit"
+            },
+            "description": "Max suggestions"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuggestedLinkRead"
+                  },
+                  "title": "Response Suggest Links"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Health check",
+        "description": "Health check endpoint exposing service status, resolved absolute database path, and backups count.",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/export": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Export knowledge graph data",
+        "description": "Export all notes, tags, and links as a JSON file.",
+        "operationId": "export_graph_data",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/import": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Import knowledge graph data",
+        "description": "Import notes, tags, and links from a JSON payload.",
+        "operationId": "import_graph_data",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Payload",
+                "description": "JSON payload containing notes, tags, and links"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Subscribe to SSE events",
+        "description": "Server-Sent Events (SSE) stream broadcasting real-time graph mutations.",
+        "operationId": "events_stream",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/reset": {
+      "delete": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Reset database to empty state",
+        "description": "Clear all notes, tags, links, and groups. Requires explicit confirmation 'DELETE ALL'. Takes automatic backup first.",
+        "operationId": "reset_database",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetDatabaseRequest",
+                "description": "Must contain confirm: 'DELETE ALL'"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/backups": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "List database backups",
+        "description": "List all available database backup files.",
+        "operationId": "list_backups",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BackupItem"
+                  },
+                  "type": "array",
+                  "title": "Response List Backups"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/backups/restore": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Restore database backup",
+        "description": "Restores database from specified backup. Requires confirm: 'RESTORE'.",
+        "operationId": "restore_backup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreBackupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/activity": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Get recent activity log",
+        "description": "Fetch recent system activity log items.",
+        "operationId": "get_activity_log",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityLogItem"
+                  },
+                  "title": "Response Get Activity Log"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assist/status": {
+      "get": {
+        "tags": [
+          "Assist & Intelligence"
+        ],
+        "summary": "Get Status",
+        "description": "Reports whether AI assistant is enabled and the active provider information.",
+        "operationId": "get_assist_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assist/tags": {
+      "post": {
+        "tags": [
+          "Assist & Intelligence"
+        ],
+        "summary": "Assist Tags",
+        "description": "Analyzes note tags: normalizes input, detects phrase merge opportunities,\ntypos, and derives smart keyword tag suggestions from note content.",
+        "operationId": "assist_tags",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagAssistRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagAssistResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assist/proofread": {
+      "post": {
+        "tags": [
+          "Assist & Intelligence"
+        ],
+        "summary": "Proofread",
+        "description": "Performs deterministic offline proofreading on note text:\nchecks casing, repeated words, and typos while exempting code, wikilinks, and known titles.",
+        "operationId": "proofread_content",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProofreadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProofreadIssue"
+                  },
+                  "type": "array",
+                  "title": "Response Proofread Content"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assist/link-suggestions": {
+      "get": {
+        "tags": [
+          "Assist & Intelligence"
+        ],
+        "summary": "Get Link Suggestions",
+        "description": "Calculates multi-signal link suggestions based on text mentions, TF-IDF similarity,\nshared tags, and mutual neighbours, excluding dismissed or already linked notes.",
+        "operationId": "get_link_suggestions",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "ID of the note to retrieve link suggestions for",
+              "title": "Note Id"
+            },
+            "description": "ID of the note to retrieve link suggestions for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LinkSuggestionItem"
+                  },
+                  "title": "Response Get Link Suggestions"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assist/link-suggestions/dismiss": {
+      "post": {
+        "tags": [
+          "Assist & Intelligence"
+        ],
+        "summary": "Dismiss Link Suggestion",
+        "description": "Dismisses a link suggestion pair permanently so it never reappears.",
+        "operationId": "dismiss_link_suggestion",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DismissSuggestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DismissSuggestionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trash/": {
+      "get": {
+        "tags": [
+          "trash"
+        ],
+        "summary": "List trash items",
+        "description": "List deleted notes currently stored in trash (snapshots kept for 30 days).",
+        "operationId": "list_trash",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrashItem"
+                  },
+                  "type": "array",
+                  "title": "Response List Trash"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "trash"
+        ],
+        "summary": "Empty trash",
+        "description": "Permanently delete all items from trash.",
+        "operationId": "empty_trash",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trash/{trash_id}": {
+      "get": {
+        "tags": [
+          "trash"
+        ],
+        "summary": "Get trash item details",
+        "description": "View details and snapshot payload of a deleted note in trash.",
+        "operationId": "get_trash_item",
+        "parameters": [
+          {
+            "name": "trash_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Trash Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "trash"
+        ],
+        "summary": "Permanently delete trash item",
+        "description": "Permanently delete a note snapshot from trash.",
+        "operationId": "delete_trash_item",
+        "parameters": [
+          {
+            "name": "trash_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Trash Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trash/{trash_id}/restore": {
+      "post": {
+        "tags": [
+          "trash"
+        ],
+        "summary": "Restore note from trash",
+        "description": "Recreate note from trash snapshot, restoring tags, links, and group. Returns 409 if title is taken.",
+        "operationId": "restore_note_from_trash",
+        "parameters": [
+          {
+            "name": "trash_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Trash Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivityLogItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "ts": {
+            "type": "string",
+            "title": "Ts"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ts",
+          "action",
+          "entity"
+        ],
+        "title": "ActivityLogItem"
+      },
+      "AssistStatusResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "provider"
+        ],
+        "title": "AssistStatusResponse"
+      },
+      "AutocompleteItem": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "score"
+        ],
+        "title": "AutocompleteItem"
+      },
+      "AutocompleteResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/AutocompleteItem"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "results"
+        ],
+        "title": "AutocompleteResponse"
+      },
+      "BackupItem": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "created_at",
+          "size_bytes"
+        ],
+        "title": "BackupItem"
+      },
+      "DismissSuggestionRequest": {
+        "properties": {
+          "note_id": {
+            "type": "integer",
+            "title": "Note Id"
+          },
+          "other_id": {
+            "type": "integer",
+            "title": "Other Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "note_id",
+          "other_id"
+        ],
+        "title": "DismissSuggestionRequest"
+      },
+      "DismissSuggestionResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "title": "DismissSuggestionResponse"
+      },
+      "GraphEdge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "mutual": {
+            "type": "boolean",
+            "title": "Mutual",
+            "default": false
+          },
+          "direction": {
+            "type": "string",
+            "title": "Direction",
+            "default": "directed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "target",
+          "origin"
+        ],
+        "title": "GraphEdge"
+      },
+      "GraphNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "connection_count": {
+            "type": "integer",
+            "title": "Connection Count",
+            "default": 0
+          },
+          "pinned": {
+            "type": "boolean",
+            "title": "Pinned",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "GraphNode"
+      },
+      "GraphResponse": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "adjacency_list": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Adjacency List"
+          },
+          "outgoing_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Outgoing Ids",
+            "default": []
+          },
+          "backlink_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Backlink Ids",
+            "default": []
+          },
+          "mutual_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mutual Ids",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges",
+          "adjacency_list"
+        ],
+        "title": "GraphResponse"
+      },
+      "GraphStats": {
+        "properties": {
+          "total_notes": {
+            "type": "integer",
+            "title": "Total Notes"
+          },
+          "total_links": {
+            "type": "integer",
+            "title": "Total Links"
+          },
+          "total_tags": {
+            "type": "integer",
+            "title": "Total Tags"
+          },
+          "orphan_count": {
+            "type": "integer",
+            "title": "Orphan Count"
+          },
+          "orphans": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Orphans"
+          },
+          "hubs": {
+            "items": {
+              "$ref": "#/components/schemas/HubStat"
+            },
+            "type": "array",
+            "title": "Hubs"
+          },
+          "tag_distribution": {
+            "items": {
+              "$ref": "#/components/schemas/TagDistributionStat"
+            },
+            "type": "array",
+            "title": "Tag Distribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_notes",
+          "total_links",
+          "total_tags",
+          "orphan_count",
+          "orphans",
+          "hubs",
+          "tag_distribution"
+        ],
+        "title": "GraphStats"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "database_path": {
+            "type": "string",
+            "title": "Database Path"
+          },
+          "backups_count": {
+            "type": "integer",
+            "title": "Backups Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "database_path",
+          "backups_count"
+        ],
+        "title": "HealthResponse"
+      },
+      "HubStat": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "link_count": {
+            "type": "integer",
+            "title": "Link Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "link_count"
+        ],
+        "title": "HubStat"
+      },
+      "LinkCreate": {
+        "properties": {
+          "target_id": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Target Id",
+            "description": "Target note ID to link to"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_id"
+        ],
+        "title": "LinkCreate"
+      },
+      "LinkDeleteResponse": {
+        "properties": {
+          "source_id": {
+            "type": "integer",
+            "title": "Source Id"
+          },
+          "target_id": {
+            "type": "integer",
+            "title": "Target Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "target_id",
+          "message"
+        ],
+        "title": "LinkDeleteResponse"
+      },
+      "LinkRead": {
+        "properties": {
+          "source_id": {
+            "type": "integer",
+            "title": "Source Id"
+          },
+          "target_id": {
+            "type": "integer",
+            "title": "Target Id"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "source_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Title"
+          },
+          "target_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "target_id",
+          "origin"
+        ],
+        "title": "LinkRead"
+      },
+      "LinkSuggestionItem": {
+        "properties": {
+          "note_id": {
+            "type": "integer",
+            "title": "Note Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "note_id",
+          "title",
+          "score",
+          "reasons"
+        ],
+        "title": "LinkSuggestionItem"
+      },
+      "NoteBacklinkItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "origin"
+        ],
+        "title": "NoteBacklinkItem"
+      },
+      "NoteCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Unique title of the note"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Markdown content of the note",
+            "default": ""
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags",
+            "description": "List of tags for the note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "NoteCreate"
+      },
+      "NoteDeleteResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "message"
+        ],
+        "title": "NoteDeleteResponse"
+      },
+      "NoteDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "pinned": {
+            "type": "boolean",
+            "title": "Pinned"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "outgoing_links": {
+            "items": {
+              "$ref": "#/components/schemas/LinkRead"
+            },
+            "type": "array",
+            "title": "Outgoing Links"
+          },
+          "backlinks": {
+            "items": {
+              "$ref": "#/components/schemas/NoteBacklinkItem"
+            },
+            "type": "array",
+            "title": "Backlinks"
+          },
+          "unresolved_links": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unresolved Links"
+          },
+          "related_notes": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedNoteItem"
+            },
+            "type": "array",
+            "title": "Related Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "content",
+          "tags",
+          "pinned",
+          "outgoing_links",
+          "backlinks",
+          "unresolved_links",
+          "related_notes"
+        ],
+        "title": "NoteDetail"
+      },
+      "NoteListItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content_snippet": {
+            "type": "string",
+            "title": "Content Snippet"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "outgoing_link_count": {
+            "type": "integer",
+            "title": "Outgoing Link Count"
+          },
+          "backlink_count": {
+            "type": "integer",
+            "title": "Backlink Count"
+          },
+          "pinned": {
+            "type": "boolean",
+            "title": "Pinned"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "content_snippet",
+          "tags",
+          "outgoing_link_count",
+          "backlink_count",
+          "pinned"
+        ],
+        "title": "NoteListItem"
+      },
+      "NotePatch": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "pinned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned"
+          }
+        },
+        "type": "object",
+        "title": "NotePatch"
+      },
+      "NoteUpdate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Unique title of the note"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Markdown content of the note",
+            "default": ""
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags",
+            "description": "List of tags for the note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "NoteUpdate"
+      },
+      "PhraseMergeItem": {
+        "properties": {
+          "from": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "From"
+          },
+          "to": {
+            "type": "string",
+            "title": "To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from",
+          "to"
+        ],
+        "title": "PhraseMergeItem"
+      },
+      "ProofreadIssue": {
+        "properties": {
+          "start": {
+            "type": "integer",
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "title": "End"
+          },
+          "original": {
+            "type": "string",
+            "title": "Original"
+          },
+          "suggestion": {
+            "type": "string",
+            "title": "Suggestion"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "original",
+          "suggestion",
+          "reason"
+        ],
+        "title": "ProofreadIssue"
+      },
+      "ProofreadRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "ignored_words": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ignored Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "ProofreadRequest"
+      },
+      "RelatedNoteItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "shared_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Shared Tags",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "score"
+        ],
+        "title": "RelatedNoteItem"
+      },
+      "ResetDatabaseRequest": {
+        "properties": {
+          "confirm": {
+            "type": "string",
+            "title": "Confirm",
+            "description": "Confirmation phrase; must be exactly 'DELETE ALL'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirm"
+        ],
+        "title": "ResetDatabaseRequest"
+      },
+      "RestoreBackupRequest": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "confirm": {
+            "type": "string",
+            "title": "Confirm",
+            "description": "Confirmation phrase; must be exactly 'RESTORE'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "confirm"
+        ],
+        "title": "RestoreBackupRequest"
+      },
+      "SearchResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SearchResultItem"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "total",
+          "results"
+        ],
+        "title": "SearchResponse"
+      },
+      "SearchResultItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "match_type": {
+            "type": "string",
+            "title": "Match Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "snippet",
+          "tags",
+          "score",
+          "match_type"
+        ],
+        "title": "SearchResultItem"
+      },
+      "ShortestPathResponse": {
+        "properties": {
+          "source_id": {
+            "type": "integer",
+            "title": "Source Id"
+          },
+          "target_id": {
+            "type": "integer",
+            "title": "Target Id"
+          },
+          "found": {
+            "type": "boolean",
+            "title": "Found"
+          },
+          "path": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Path",
+            "default": []
+          },
+          "path_titles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path Titles",
+            "default": []
+          },
+          "length": {
+            "type": "integer",
+            "title": "Length",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "target_id",
+          "found"
+        ],
+        "title": "ShortestPathResponse"
+      },
+      "SuggestedLinkRead": {
+        "properties": {
+          "target_id": {
+            "type": "integer",
+            "title": "Target Id"
+          },
+          "target_title": {
+            "type": "string",
+            "title": "Target Title"
+          },
+          "similarity_score": {
+            "type": "number",
+            "title": "Similarity Score"
+          },
+          "shared_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Shared Tags",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_id",
+          "target_title",
+          "similarity_score"
+        ],
+        "title": "SuggestedLinkRead"
+      },
+      "TagAssistRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "default": ""
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "default": ""
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          }
+        },
+        "type": "object",
+        "title": "TagAssistRequest"
+      },
+      "TagAssistResponse": {
+        "properties": {
+          "normalized": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Normalized"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/TagSuggestionItem"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "merges": {
+            "items": {
+              "$ref": "#/components/schemas/PhraseMergeItem"
+            },
+            "type": "array",
+            "title": "Merges"
+          },
+          "corrections": {
+            "items": {
+              "$ref": "#/components/schemas/TagCorrectionItem"
+            },
+            "type": "array",
+            "title": "Corrections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "normalized",
+          "suggestions",
+          "merges",
+          "corrections"
+        ],
+        "title": "TagAssistResponse"
+      },
+      "TagCorrectionItem": {
+        "properties": {
+          "from": {
+            "type": "string",
+            "title": "From"
+          },
+          "to": {
+            "type": "string",
+            "title": "To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from",
+          "to"
+        ],
+        "title": "TagCorrectionItem"
+      },
+      "TagDistributionStat": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tag",
+          "count"
+        ],
+        "title": "TagDistributionStat"
+      },
+      "TagSuggestResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/TagSuggestion"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "suggestions"
+        ],
+        "title": "TagSuggestResponse"
+      },
+      "TagSuggestion": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "count",
+          "score"
+        ],
+        "title": "TagSuggestion"
+      },
+      "TagSuggestionItem": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tag",
+          "reason"
+        ],
+        "title": "TagSuggestionItem"
+      },
+      "TagUsage": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "count"
+        ],
+        "title": "TagUsage"
+      },
+      "TitleSuggestItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "TitleSuggestItem"
+      },
+      "TitleSuggestResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/TitleSuggestItem"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "results"
+        ],
+        "title": "TitleSuggestResponse"
+      },
+      "TrashDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "original_note_id": {
+            "type": "integer",
+            "title": "Original Note Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "deleted_at": {
+            "type": "string",
+            "title": "Deleted At"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "original_note_id",
+          "title",
+          "deleted_at",
+          "payload"
+        ],
+        "title": "TrashDetail"
+      },
+      "TrashItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "original_note_id": {
+            "type": "integer",
+            "title": "Original Note Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "deleted_at": {
+            "type": "string",
+            "title": "Deleted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "original_note_id",
+          "title",
+          "deleted_at"
+        ],
+        "title": "TrashItem"
+      },
+      "UnlinkedMentionItem": {
+        "properties": {
+          "note_id": {
+            "type": "integer",
+            "title": "Note Id"
+          },
+          "note_title": {
+            "type": "string",
+            "title": "Note Title"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          }
+        },
+        "type": "object",
+        "required": [
+          "note_id",
+          "note_title",
+          "snippet"
+        ],
+        "title": "UnlinkedMentionItem"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

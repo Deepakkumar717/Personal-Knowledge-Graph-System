@@ -1,0 +1,43 @@
+# Python virtual environments & bytecode
+env/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Node & Frontend dependencies & builds
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+
+# SQLite database runtime data & backups
+*.db
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.sqlite
+data/backups/
+*.sqlite
+*.db-wal
+*.db-shm
+
+# Keep directory structure
+!data/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
