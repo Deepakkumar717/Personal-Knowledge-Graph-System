@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**get_graph**](GraphApi.md#get_graph) | **GET** /graph/ | Get full graph
 [**get_graph_neighbors**](GraphApi.md#get_graph_neighbors) | **GET** /graph/neighbors/{note_id} | Get BFS neighborhood of a note
 [**get_graph_stats**](GraphApi.md#get_graph_stats) | **GET** /graph/stats | Get knowledge graph statistics
+[**get_insights**](GraphApi.md#get_insights) | **GET** /graph/insights | Get knowledge graph insights and analytics
 [**get_shortest_path**](GraphApi.md#get_shortest_path) | **GET** /graph/path | Find shortest path between two notes
 
 
@@ -196,6 +197,70 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**GraphStats**](GraphStats.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_insights**
+> GraphInsightsResponse get_insights()
+
+Get knowledge graph insights and analytics
+
+Retrieve comprehensive graph analytics: top tags, groups, activity over 30 days, hubs, orphans, and link types.
+
+### Example
+
+
+```python
+import knowledge_sdk
+from knowledge_sdk.models.graph_insights_response import GraphInsightsResponse
+from knowledge_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = knowledge_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with knowledge_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = knowledge_sdk.GraphApi(api_client)
+
+    try:
+        # Get knowledge graph insights and analytics
+        api_response = api_instance.get_insights()
+        print("The response of GraphApi->get_insights:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling GraphApi->get_insights: %s\n" % e)
+```
+
+
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**GraphInsightsResponse**](GraphInsightsResponse.md)
 
 ### Authorization
 

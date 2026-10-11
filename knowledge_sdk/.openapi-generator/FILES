@@ -9,10 +9,12 @@ docs/AssistStatusResponse.md
 docs/AutocompleteItem.md
 docs/AutocompleteResponse.md
 docs/BackupItem.md
+docs/ConnectedVsOrphans.md
 docs/DismissSuggestionRequest.md
 docs/DismissSuggestionResponse.md
 docs/GraphApi.md
 docs/GraphEdge.md
+docs/GraphInsightsResponse.md
 docs/GraphNode.md
 docs/GraphResponse.md
 docs/GraphStats.md
@@ -23,6 +25,7 @@ docs/LinkCreate.md
 docs/LinkDeleteResponse.md
 docs/LinkRead.md
 docs/LinkSuggestionItem.md
+docs/LinkTypes.md
 docs/LocationInner.md
 docs/NoteBacklinkItem.md
 docs/NoteCreate.md
@@ -32,6 +35,9 @@ docs/NoteListItem.md
 docs/NotePatch.md
 docs/NoteUpdate.md
 docs/NotesApi.md
+docs/NotesByGroupItem.md
+docs/NotesByTagItem.md
+docs/NotesPerDayItem.md
 docs/PhraseMergeItem.md
 docs/ProofreadIssue.md
 docs/ProofreadRequest.md
@@ -55,6 +61,7 @@ docs/TagUsage.md
 docs/TagsApi.md
 docs/TitleSuggestItem.md
 docs/TitleSuggestResponse.md
+docs/TopConnectedItem.md
 docs/TrashApi.md
 docs/TrashDetail.md
 docs/TrashItem.md
@@ -80,9 +87,11 @@ knowledge_sdk/models/assist_status_response.py
 knowledge_sdk/models/autocomplete_item.py
 knowledge_sdk/models/autocomplete_response.py
 knowledge_sdk/models/backup_item.py
+knowledge_sdk/models/connected_vs_orphans.py
 knowledge_sdk/models/dismiss_suggestion_request.py
 knowledge_sdk/models/dismiss_suggestion_response.py
 knowledge_sdk/models/graph_edge.py
+knowledge_sdk/models/graph_insights_response.py
 knowledge_sdk/models/graph_node.py
 knowledge_sdk/models/graph_response.py
 knowledge_sdk/models/graph_stats.py
@@ -93,6 +102,7 @@ knowledge_sdk/models/link_create.py
 knowledge_sdk/models/link_delete_response.py
 knowledge_sdk/models/link_read.py
 knowledge_sdk/models/link_suggestion_item.py
+knowledge_sdk/models/link_types.py
 knowledge_sdk/models/location_inner.py
 knowledge_sdk/models/note_backlink_item.py
 knowledge_sdk/models/note_create.py
@@ -101,6 +111,9 @@ knowledge_sdk/models/note_detail.py
 knowledge_sdk/models/note_list_item.py
 knowledge_sdk/models/note_patch.py
 knowledge_sdk/models/note_update.py
+knowledge_sdk/models/notes_by_group_item.py
+knowledge_sdk/models/notes_by_tag_item.py
+knowledge_sdk/models/notes_per_day_item.py
 knowledge_sdk/models/phrase_merge_item.py
 knowledge_sdk/models/proofread_issue.py
 knowledge_sdk/models/proofread_request.py
@@ -121,6 +134,7 @@ knowledge_sdk/models/tag_suggestion_item.py
 knowledge_sdk/models/tag_usage.py
 knowledge_sdk/models/title_suggest_item.py
 knowledge_sdk/models/title_suggest_response.py
+knowledge_sdk/models/top_connected_item.py
 knowledge_sdk/models/trash_detail.py
 knowledge_sdk/models/trash_item.py
 knowledge_sdk/models/unlinked_mention_item.py

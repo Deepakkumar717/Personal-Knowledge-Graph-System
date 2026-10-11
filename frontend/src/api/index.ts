@@ -129,6 +129,47 @@ export interface ShortestPathResponse {
   length: number;
 }
 
+export interface NotesByTagItem {
+  tag: string;
+  count: number;
+}
+
+export interface NotesByGroupItem {
+  group: string;
+  count: number;
+}
+
+export interface NotesPerDayItem {
+  date: string;
+  count: number;
+}
+
+export interface TopConnectedItem {
+  id: number;
+  title: string;
+  degree: number;
+}
+
+export interface ConnectedVsOrphans {
+  connected: number;
+  orphans: number;
+}
+
+export interface LinkTypes {
+  auto: number;
+  manual: number;
+  mutual: number;
+}
+
+export interface GraphInsightsResponse {
+  notes_by_tag: NotesByTagItem[];
+  notes_by_group: NotesByGroupItem[];
+  notes_per_day: NotesPerDayItem[];
+  top_connected: TopConnectedItem[];
+  connected_vs_orphans: ConnectedVsOrphans;
+  link_types: LinkTypes;
+}
+
 export interface TagUsage {
   id: number;
   name: string;
@@ -241,6 +282,9 @@ export const graphApi = {
 
   getStats: () =>
     apiClient.get<GraphStats>('/graph/stats').then((r) => r.data),
+
+  getInsights: () =>
+    apiClient.get<GraphInsightsResponse>('/graph/insights').then((r) => r.data),
 };
 
 export const tagsApi = {

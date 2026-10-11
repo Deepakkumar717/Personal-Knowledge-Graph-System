@@ -18,9 +18,11 @@ from knowledge_sdk.models.assist_status_response import AssistStatusResponse
 from knowledge_sdk.models.autocomplete_item import AutocompleteItem
 from knowledge_sdk.models.autocomplete_response import AutocompleteResponse
 from knowledge_sdk.models.backup_item import BackupItem
+from knowledge_sdk.models.connected_vs_orphans import ConnectedVsOrphans
 from knowledge_sdk.models.dismiss_suggestion_request import DismissSuggestionRequest
 from knowledge_sdk.models.dismiss_suggestion_response import DismissSuggestionResponse
 from knowledge_sdk.models.graph_edge import GraphEdge
+from knowledge_sdk.models.graph_insights_response import GraphInsightsResponse
 from knowledge_sdk.models.graph_node import GraphNode
 from knowledge_sdk.models.graph_response import GraphResponse
 from knowledge_sdk.models.graph_stats import GraphStats
@@ -31,6 +33,7 @@ from knowledge_sdk.models.link_create import LinkCreate
 from knowledge_sdk.models.link_delete_response import LinkDeleteResponse
 from knowledge_sdk.models.link_read import LinkRead
 from knowledge_sdk.models.link_suggestion_item import LinkSuggestionItem
+from knowledge_sdk.models.link_types import LinkTypes
 from knowledge_sdk.models.location_inner import LocationInner
 from knowledge_sdk.models.note_backlink_item import NoteBacklinkItem
 from knowledge_sdk.models.note_create import NoteCreate
@@ -39,6 +42,9 @@ from knowledge_sdk.models.note_detail import NoteDetail
 from knowledge_sdk.models.note_list_item import NoteListItem
 from knowledge_sdk.models.note_patch import NotePatch
 from knowledge_sdk.models.note_update import NoteUpdate
+from knowledge_sdk.models.notes_by_group_item import NotesByGroupItem
+from knowledge_sdk.models.notes_by_tag_item import NotesByTagItem
+from knowledge_sdk.models.notes_per_day_item import NotesPerDayItem
 from knowledge_sdk.models.phrase_merge_item import PhraseMergeItem
 from knowledge_sdk.models.proofread_issue import ProofreadIssue
 from knowledge_sdk.models.proofread_request import ProofreadRequest
@@ -59,6 +65,7 @@ from knowledge_sdk.models.tag_suggestion_item import TagSuggestionItem
 from knowledge_sdk.models.tag_usage import TagUsage
 from knowledge_sdk.models.title_suggest_item import TitleSuggestItem
 from knowledge_sdk.models.title_suggest_response import TitleSuggestResponse
+from knowledge_sdk.models.top_connected_item import TopConnectedItem
 from knowledge_sdk.models.trash_detail import TrashDetail
 from knowledge_sdk.models.trash_item import TrashItem
 from knowledge_sdk.models.unlinked_mention_item import UnlinkedMentionItem

@@ -18,7 +18,7 @@ from setuptools import setup, find_packages  # noqa: H301
 #
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
-NAME = "knowledge_sdk"
+NAME = "knowledge-sdk"
 VERSION = "1.0.0"
 PYTHON_REQUIRES = ">= 3.10"
 REQUIRES = [

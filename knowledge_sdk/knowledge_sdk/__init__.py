@@ -39,9 +39,11 @@ __all__ = [
     "AutocompleteItem",
     "AutocompleteResponse",
     "BackupItem",
+    "ConnectedVsOrphans",
     "DismissSuggestionRequest",
     "DismissSuggestionResponse",
     "GraphEdge",
+    "GraphInsightsResponse",
     "GraphNode",
     "GraphResponse",
     "GraphStats",
@@ -52,6 +54,7 @@ __all__ = [
     "LinkDeleteResponse",
     "LinkRead",
     "LinkSuggestionItem",
+    "LinkTypes",
     "LocationInner",
     "NoteBacklinkItem",
     "NoteCreate",
@@ -60,6 +63,9 @@ __all__ = [
     "NoteListItem",
     "NotePatch",
     "NoteUpdate",
+    "NotesByGroupItem",
+    "NotesByTagItem",
+    "NotesPerDayItem",
     "PhraseMergeItem",
     "ProofreadIssue",
     "ProofreadRequest",
@@ -80,6 +86,7 @@ __all__ = [
     "TagUsage",
     "TitleSuggestItem",
     "TitleSuggestResponse",
+    "TopConnectedItem",
     "TrashDetail",
     "TrashItem",
     "UnlinkedMentionItem",
@@ -112,9 +119,11 @@ from knowledge_sdk.models.assist_status_response import AssistStatusResponse as 
 from knowledge_sdk.models.autocomplete_item import AutocompleteItem as AutocompleteItem
 from knowledge_sdk.models.autocomplete_response import AutocompleteResponse as AutocompleteResponse
 from knowledge_sdk.models.backup_item import BackupItem as BackupItem
+from knowledge_sdk.models.connected_vs_orphans import ConnectedVsOrphans as ConnectedVsOrphans
 from knowledge_sdk.models.dismiss_suggestion_request import DismissSuggestionRequest as DismissSuggestionRequest
 from knowledge_sdk.models.dismiss_suggestion_response import DismissSuggestionResponse as DismissSuggestionResponse
 from knowledge_sdk.models.graph_edge import GraphEdge as GraphEdge
+from knowledge_sdk.models.graph_insights_response import GraphInsightsResponse as GraphInsightsResponse
 from knowledge_sdk.models.graph_node import GraphNode as GraphNode
 from knowledge_sdk.models.graph_response import GraphResponse as GraphResponse
 from knowledge_sdk.models.graph_stats import GraphStats as GraphStats
@@ -125,6 +134,7 @@ from knowledge_sdk.models.link_create import LinkCreate as LinkCreate
 from knowledge_sdk.models.link_delete_response import LinkDeleteResponse as LinkDeleteResponse
 from knowledge_sdk.models.link_read import LinkRead as LinkRead
 from knowledge_sdk.models.link_suggestion_item import LinkSuggestionItem as LinkSuggestionItem
+from knowledge_sdk.models.link_types import LinkTypes as LinkTypes
 from knowledge_sdk.models.location_inner import LocationInner as LocationInner
 from knowledge_sdk.models.note_backlink_item import NoteBacklinkItem as NoteBacklinkItem
 from knowledge_sdk.models.note_create import NoteCreate as NoteCreate
@@ -133,6 +143,9 @@ from knowledge_sdk.models.note_detail import NoteDetail as NoteDetail
 from knowledge_sdk.models.note_list_item import NoteListItem as NoteListItem
 from knowledge_sdk.models.note_patch import NotePatch as NotePatch
 from knowledge_sdk.models.note_update import NoteUpdate as NoteUpdate
+from knowledge_sdk.models.notes_by_group_item import NotesByGroupItem as NotesByGroupItem
+from knowledge_sdk.models.notes_by_tag_item import NotesByTagItem as NotesByTagItem
+from knowledge_sdk.models.notes_per_day_item import NotesPerDayItem as NotesPerDayItem
 from knowledge_sdk.models.phrase_merge_item import PhraseMergeItem as PhraseMergeItem
 from knowledge_sdk.models.proofread_issue import ProofreadIssue as ProofreadIssue
 from knowledge_sdk.models.proofread_request import ProofreadRequest as ProofreadRequest
@@ -153,6 +166,7 @@ from knowledge_sdk.models.tag_suggestion_item import TagSuggestionItem as TagSug
 from knowledge_sdk.models.tag_usage import TagUsage as TagUsage
 from knowledge_sdk.models.title_suggest_item import TitleSuggestItem as TitleSuggestItem
 from knowledge_sdk.models.title_suggest_response import TitleSuggestResponse as TitleSuggestResponse
+from knowledge_sdk.models.top_connected_item import TopConnectedItem as TopConnectedItem
 from knowledge_sdk.models.trash_detail import TrashDetail as TrashDetail
 from knowledge_sdk.models.trash_item import TrashItem as TrashItem
 from knowledge_sdk.models.unlinked_mention_item import UnlinkedMentionItem as UnlinkedMentionItem

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Network, FileText, Hash, Database, Download, Upload, Trash2, Edit3, ChevronDown, Sparkles, History, Archive } from 'lucide-react';
+import { Search, Plus, Network, FileText, Hash, Database, Download, Upload, Trash2, Edit3, ChevronDown, Sparkles, History, Archive, BarChart2 } from 'lucide-react';
 import { searchApi, AutocompleteItem } from '../api';
 
 interface TopBarProps {
@@ -12,6 +12,8 @@ interface TopBarProps {
   onResetDatabase: () => void;
   onOpenTrash?: () => void;
   onOpenActivity?: () => void;
+  onOpenInsights?: () => void;
+  sseStatus?: 'connected' | 'reconnecting' | 'disconnected';
   searchInputRef: React.RefObject<HTMLInputElement>;
 }
 
@@ -25,6 +27,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onResetDatabase,
   onOpenTrash,
   onOpenActivity,
+  onOpenInsights,
+  sseStatus = 'connected',
   searchInputRef,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -221,6 +225,58 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Action Buttons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+        {/* Real-time Live indicator */}
+        <div
+          title={sseStatus === 'connected' ? 'Real-time SSE: Live & Connected' : 'Real-time SSE: Reconnecting...'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '5px 11px',
+            borderRadius: '16px',
+            backgroundColor: sseStatus === 'connected' ? '#ECFDF5' : '#FFFBEB',
+            border: `1px solid ${sseStatus === 'connected' ? '#A7F3D0' : '#FDE68A'}`,
+            fontSize: '12px',
+            fontWeight: 600,
+            color: sseStatus === 'connected' ? '#065F46' : '#92400E',
+          }}
+        >
+          <span
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: sseStatus === 'connected' ? '#10B981' : '#F59E0B',
+              boxShadow: sseStatus === 'connected' ? '0 0 6px #10B981' : 'none',
+            }}
+          />
+          <span>{sseStatus === 'connected' ? 'Live' : 'Reconnecting...'}</span>
+        </div>
+
+        {/* Insights Button */}
+        {onOpenInsights && (
+          <button
+            onClick={onOpenInsights}
+            title="Open knowledge graph insights & charts"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0 12px',
+              height: '38px',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 600,
+              fontSize: '13px',
+              cursor: 'pointer',
+            }}
+          >
+            <BarChart2 size={15} color="var(--primary)" />
+            <span>Insights</span>
+          </button>
+        )}
 
         {/* Edit Mode Toggle */}
         <button

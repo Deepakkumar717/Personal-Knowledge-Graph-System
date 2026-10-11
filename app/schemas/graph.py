@@ -49,3 +49,38 @@ class ShortestPathResponse(BaseModel):
     path: List[int] = []
     path_titles: List[str] = []
     length: int = 0
+
+class NotesByTagItem(BaseModel):
+    tag: str
+    count: int
+
+class NotesByGroupItem(BaseModel):
+    group: str
+    count: int
+
+class NotesPerDayItem(BaseModel):
+    date: str  # YYYY-MM-DD in UTC
+    count: int
+
+class TopConnectedItem(BaseModel):
+    id: int
+    title: str
+    degree: int
+
+class ConnectedVsOrphans(BaseModel):
+    connected: int
+    orphans: int
+
+class LinkTypes(BaseModel):
+    auto: int
+    manual: int
+    mutual: int
+
+class GraphInsightsResponse(BaseModel):
+    notes_by_tag: List[NotesByTagItem]
+    notes_by_group: List[NotesByGroupItem]
+    notes_per_day: List[NotesPerDayItem]
+    top_connected: List[TopConnectedItem]
+    connected_vs_orphans: ConnectedVsOrphans
+    link_types: LinkTypes
+

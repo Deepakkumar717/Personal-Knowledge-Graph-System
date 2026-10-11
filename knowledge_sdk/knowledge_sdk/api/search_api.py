@@ -908,7 +908,7 @@ class SearchApi:
     def suggest_titles(
         self,
         q: Annotated[Optional[StrictStr], Field(description="Title query prefix")] = None,
-        limit: Annotated[Optional[Annotated[int, Field(le=50, strict=True, ge=1)]], Field(description="Max suggestions")] = None,
+        limit: Annotated[Optional[Annotated[int, Field(le=200, strict=True, ge=1)]], Field(description="Max suggestions")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -980,7 +980,7 @@ class SearchApi:
     def suggest_titles_with_http_info(
         self,
         q: Annotated[Optional[StrictStr], Field(description="Title query prefix")] = None,
-        limit: Annotated[Optional[Annotated[int, Field(le=50, strict=True, ge=1)]], Field(description="Max suggestions")] = None,
+        limit: Annotated[Optional[Annotated[int, Field(le=200, strict=True, ge=1)]], Field(description="Max suggestions")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1052,7 +1052,7 @@ class SearchApi:
     def suggest_titles_without_preload_content(
         self,
         q: Annotated[Optional[StrictStr], Field(description="Title query prefix")] = None,
-        limit: Annotated[Optional[Annotated[int, Field(le=50, strict=True, ge=1)]], Field(description="Max suggestions")] = None,
+        limit: Annotated[Optional[Annotated[int, Field(le=200, strict=True, ge=1)]], Field(description="Max suggestions")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],

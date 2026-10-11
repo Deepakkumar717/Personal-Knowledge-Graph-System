@@ -4,6 +4,7 @@ import {
   TagUsage,
   GraphResponse,
   GraphStats,
+  GraphInsightsResponse,
   notesApi,
   tagsApi,
   graphApi,
@@ -16,6 +17,7 @@ import { NoteDetailPanel } from './components/NoteDetailPanel';
 import { ExportImportModal } from './components/ExportImportModal';
 import { TrashModal } from './components/TrashModal';
 import { ActivityModal } from './components/ActivityModal';
+import { InsightsPanel } from './components/InsightsPanel';
 import { ToastContainer } from './components/ToastContainer';
 import { useToast } from './context/ToastContext';
 import { useSSE } from './hooks/useSSE';
@@ -28,6 +30,8 @@ export const App: React.FC = () => {
   const [tags, setTags] = useState<TagUsage[]>([]);
   const [graphData, setGraphData] = useState<GraphResponse | null>(null);
   const [stats, setStats] = useState<GraphStats | null>(null);
+  const [insightsData, setInsightsData] = useState<GraphInsightsResponse | null>(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
 
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -37,6 +41,7 @@ export const App: React.FC = () => {
   const [isExportImportOpen, setIsExportImportOpen] = useState(false);
   const [isTrashOpen, setIsTrashOpen] = useState(false);
   const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const [isInsightsOpen, setIsInsightsOpen] = useState(false);
   const [neighborhoodDepth, setNeighborhoodDepth] = useState<number>(2);
   const [graphTagFilter, setGraphTagFilter] = useState<string | null>(null);
   const [navigationHistory, setNavigationHistory] = useState<number[]>([]);
@@ -95,12 +100,26 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  // Fetch Insights
+  const fetchInsights = useCallback(async () => {
+    setLoadingInsights(true);
+    try {
+      const data = await graphApi.getInsights();
+      setInsightsData(data);
+    } catch (err: any) {
+      console.error('Failed to fetch insights:', err);
+    } finally {
+      setLoadingInsights(false);
+    }
+  }, []);
+
   const refreshAll = useCallback(() => {
     fetchNotes();
     fetchTags();
     fetchGraph();
     fetchStats();
-  }, [fetchNotes, fetchTags, fetchGraph, fetchStats]);
+    fetchInsights();
+  }, [fetchNotes, fetchTags, fetchGraph, fetchStats, fetchInsights]);
 
   // Initial Load
   useEffect(() => {
@@ -111,14 +130,29 @@ export const App: React.FC = () => {
     fetchGraph();
   }, [selectedNoteId, neighborhoodDepth, graphTagFilter]);
 
-  // SSE Real-Time Sync
-  useSSE(
+  // SSE Real-Time Sync with Selective Refetching
+  const { status: sseStatus } = useSSE(
     useCallback(
       (event: string, data: any) => {
         console.log('SSE event received:', event, data);
-        refreshAll();
+        if (event === 'note_created' || event === 'note_updated' || event === 'note_deleted') {
+          fetchNotes();
+          fetchGraph();
+          fetchStats();
+          fetchTags();
+          fetchInsights();
+        } else if (event === 'link_created' || event === 'link_deleted') {
+          fetchGraph();
+          fetchStats();
+          fetchInsights();
+        } else if (event === 'group_changed') {
+          fetchNotes();
+          fetchInsights();
+        } else if (event === 'database_reset') {
+          refreshAll();
+        }
       },
-      [refreshAll]
+      [fetchNotes, fetchGraph, fetchStats, fetchTags, fetchInsights, refreshAll]
     )
   );
 
@@ -216,6 +250,11 @@ export const App: React.FC = () => {
         onResetDatabase={handleResetDatabase}
         onOpenTrash={() => setIsTrashOpen(true)}
         onOpenActivity={() => setIsActivityOpen(true)}
+        onOpenInsights={() => {
+          setIsInsightsOpen(true);
+          fetchInsights();
+        }}
+        sseStatus={sseStatus}
         searchInputRef={searchInputRef}
       />
 
@@ -328,6 +367,17 @@ export const App: React.FC = () => {
         isOpen={isActivityOpen}
         onClose={() => setIsActivityOpen(false)}
         onRefreshAll={refreshAll}
+      />
+
+      {/* Graph Insights Panel */}
+      <InsightsPanel
+        isOpen={isInsightsOpen}
+        onClose={() => setIsInsightsOpen(false)}
+        insights={insightsData}
+        loading={loadingInsights}
+        onRefresh={fetchInsights}
+        onSelectTag={(tag) => setSelectedTag(tag)}
+        onSelectGroup={(group) => setSelectedTag(group)}
       />
 
       {/* Toast Notifications */}

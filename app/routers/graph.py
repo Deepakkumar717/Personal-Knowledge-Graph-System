@@ -1,10 +1,22 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, Path
-from app.schemas.graph import GraphResponse, GraphStats, ShortestPathResponse
+from app.schemas.graph import GraphResponse, GraphStats, ShortestPathResponse, GraphInsightsResponse
 from app.services.graph_service import GraphService
 from app.core.dependencies import get_graph_service
 
 router = APIRouter(prefix="/graph", tags=["graph"])
+
+@router.get(
+    "/insights",
+    response_model=GraphInsightsResponse,
+    summary="Get knowledge graph insights and analytics",
+    operation_id="get_insights",
+)
+def get_insights(
+    graph_service: GraphService = Depends(get_graph_service),
+):
+    """Retrieve comprehensive graph analytics: top tags, groups, activity over 30 days, hubs, orphans, and link types."""
+    return graph_service.get_insights()
 
 @router.get(
     "/",

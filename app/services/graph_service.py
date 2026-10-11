@@ -1,4 +1,5 @@
-from collections import deque, defaultdict
+from collections import deque, defaultdict, Counter
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Set, Optional, Tuple
 from sqlalchemy.orm import Session
 from app.repositories.note_repo import NoteRepository
@@ -12,6 +13,13 @@ from app.schemas.graph import (
     ShortestPathResponse,
     HubStat,
     TagDistributionStat,
+    GraphInsightsResponse,
+    NotesByTagItem,
+    NotesByGroupItem,
+    NotesPerDayItem,
+    TopConnectedItem,
+    ConnectedVsOrphans,
+    LinkTypes,
 )
 from app.core.exceptions import NotFoundException, ValidationException
 
@@ -329,3 +337,94 @@ class GraphService:
             hubs=hubs_list,
             tag_distribution=tag_dist,
         )
+
+    def get_insights(self) -> GraphInsightsResponse:
+        """
+        Compute comprehensive knowledge graph insights and analytics.
+        Returns top tags, notes per day (last 30 days in UTC), top connected notes,
+        connected vs orphans, and link type breakdown.
+        """
+        all_notes = self.note_repo.get_all_notes_full()
+        all_links = self.link_repo.get_all_links()
+        all_tags = self.tag_repo.get_all_tags_with_counts()
+
+        # 1. notes_by_tag (top 10 tags by note count)
+        sorted_tags = sorted(all_tags, key=lambda tc: (-tc[1], tc[0].name.lower()))[:10]
+        notes_by_tag = [
+            NotesByTagItem(tag=tag.name, count=cnt)
+            for tag, cnt in sorted_tags
+        ]
+
+        # 2. notes_by_group (empty list as groups are not in the core 4-table schema)
+        notes_by_group: List[NotesByGroupItem] = []
+
+        # 3. notes_per_day (last 30 days in UTC)
+        now_utc = datetime.now(timezone.utc)
+        today_utc = now_utc.date()
+        days_30 = [today_utc - timedelta(days=i) for i in range(29, -1, -1)]
+
+        date_counts = Counter()
+        for n in all_notes:
+            if n.created_at:
+                d = n.created_at.date()
+                date_counts[d] += 1
+
+        notes_per_day = [
+            NotesPerDayItem(date=d.strftime("%Y-%m-%d"), count=date_counts[d])
+            for d in days_30
+        ]
+
+        # 4. Compute degrees for top_connected and connected_vs_orphans
+        degrees: Dict[int, int] = defaultdict(int)
+        for link in all_links:
+            degrees[link.source_id] += 1
+            degrees[link.target_id] += 1
+
+        # top 5 connected notes
+        sorted_notes = sorted(all_notes, key=lambda n: (-degrees[n.id], n.title.lower()))[:5]
+        top_connected = [
+            TopConnectedItem(id=n.id, title=n.title, degree=degrees[n.id])
+            for n in sorted_notes
+        ]
+
+        # 5. connected_vs_orphans
+        connected_count = sum(1 for n in all_notes if degrees[n.id] > 0)
+        orphans_count = sum(1 for n in all_notes if degrees[n.id] == 0)
+        connected_vs_orphans = ConnectedVsOrphans(
+            connected=connected_count,
+            orphans=orphans_count,
+        )
+
+        # 6. link_types {auto, manual, mutual}
+        link_pairs = {(l.source_id, l.target_id): l.origin for l in all_links}
+        mutual_pairs: Set[Tuple[int, int]] = set()
+        for (u, v) in link_pairs:
+            if (v, u) in link_pairs:
+                mutual_pairs.add((min(u, v), max(u, v)))
+        mutual_count = len(mutual_pairs)
+
+        auto_count = 0
+        manual_count = 0
+        for (u, v), orig in link_pairs.items():
+            if (v, u) in link_pairs:
+                continue
+            if orig == "auto":
+                auto_count += 1
+            else:
+                manual_count += 1
+
+        link_types = LinkTypes(
+            auto=auto_count,
+            manual=manual_count,
+            mutual=mutual_count,
+        )
+
+        return GraphInsightsResponse(
+            notes_by_tag=notes_by_tag,
+            notes_by_group=notes_by_group,
+            notes_per_day=notes_per_day,
+            top_connected=top_connected,
+            connected_vs_orphans=connected_vs_orphans,
+            link_types=link_types,
+        )
+
